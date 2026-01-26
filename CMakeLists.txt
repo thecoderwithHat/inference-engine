@@ -64,6 +64,20 @@ add_executable(onnx_inspect ${CMAKE_SOURCE_DIR}/tools/onnx_inspect.cpp)
 # Tests
 if (BUILD_TESTS)
     enable_testing()
+
+    # Always build at least one framework-free smoke test so `ctest` works
+    # even when GoogleTest isn't available on the system.
+    # add_executable(test_dtype_quant_smoke ${CMAKE_SOURCE_DIR}/tests/test_dtype_quant_smoke.cpp)
+    # target_link_libraries(test_dtype_quant_smoke PRIVATE infer_engine)
+    # add_test(NAME DTypeQuantSmoke COMMAND test_dtype_quant_smoke)
+
+    add_executable(test_dtype ${CMAKE_SOURCE_DIR}/tests/core/test_dtype.cpp)
+    target_link_libraries(test_dtype PRIVATE infer_engine)
+    add_test(NAME DType COMMAND test_dtype)
+
+    add_executable(test_quant ${CMAKE_SOURCE_DIR}/tests/test_quant.cpp)
+    target_link_libraries(test_quant PRIVATE infer_engine)
+    add_test(NAME Quant COMMAND test_quant)
     
     find_package(GTest QUIET)
     
@@ -75,10 +89,6 @@ if (BUILD_TESTS)
         add_executable(test_shape ${CMAKE_SOURCE_DIR}/tests/core/test_shape.cpp)
         target_link_libraries(test_shape PRIVATE infer_engine GTest::gtest_main)
         add_test(NAME ShapeTests COMMAND test_shape)
-        
-        add_executable(test_dtype ${CMAKE_SOURCE_DIR}/tests/core/test_dtype.cpp)
-        target_link_libraries(test_dtype PRIVATE infer_engine GTest::gtest_main)
-        add_test(NAME DTypeTests COMMAND test_dtype)
         
         add_executable(test_arena ${CMAKE_SOURCE_DIR}/tests/memory/test_arena.cpp)
         target_link_libraries(test_arena PRIVATE infer_engine GTest::gtest_main)
