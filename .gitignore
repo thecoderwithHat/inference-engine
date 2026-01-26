@@ -1,0 +1,61 @@
+# Build directory
+/build/
+
+# CMake and build files
+CMakeCache.txt
+CMakeFiles/
+CMakeFiles/*
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+Makefile
+
+# Generated binaries and libraries
+*.exe
+*.out
+*.app
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+*.o
+*.obj
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*~
+*.tmp
+
+# Logs
+*.log
+*.log.*
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Python virtualenvs and env files
+venv/
+.env
+.env.local
+
+# Test/build artifacts
+Testing/
+progress.marks
+
+# Misc
+*.gcda
+*.gcno
+*.cover
+
+# Ignore local user-specific files
+*.user
+*.user.*
+
+# Keep node modules if ever added
+node_modules/
