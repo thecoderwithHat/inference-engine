@@ -15,7 +15,7 @@ void Graph::addEdge(const std::string& from, const std::string& to) {
     // TODO: Implement edge addition
 }
 
-Tensor Graph::execute(const Tensor& input) {
+inference_engine::core::Tensor Graph::execute(const inference_engine::core::Tensor& input) {
     // TODO: Execute graph
     return input;
 }

@@ -12,7 +12,7 @@ void Model::load(const std::string& path) {
     // TODO: Load model from path
 }
 
-Tensor Model::infer(const Tensor& input) {
+inference_engine::core::Tensor Model::infer(const inference_engine::core::Tensor& input) {
     return graph_->execute(input);
 }
 

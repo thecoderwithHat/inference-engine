@@ -14,7 +14,7 @@ public:
     
     void addNode(const std::string& name);
     void addEdge(const std::string& from, const std::string& to);
-    Tensor execute(const Tensor& input);
+    inference_engine::core::Tensor execute(const inference_engine::core::Tensor& input);
 };
 
 } // namespace infer

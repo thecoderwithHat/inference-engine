@@ -14,7 +14,7 @@ public:
     ~Model();
     
     void load(const std::string& path);
-    Tensor infer(const Tensor& input);
+    inference_engine::core::Tensor infer(const inference_engine::core::Tensor& input);
 
 private:
     std::unique_ptr<Graph> graph_;
