@@ -1,6 +1,7 @@
 
 #include "inference_engine/core/dtype.h"
 
+#include <cmath>
 #include <iostream>
 
 namespace {
@@ -30,9 +31,18 @@ void expect_eq_int(int a, int b, const char* expr, const char* file, int line) {
 	}
 }
 
+void expect_close_float(float a, float b, float eps, const char* expr, const char* file, int line) {
+	if (std::fabs(a - b) > eps) {
+		++failures;
+		std::cerr << file << ":" << line << " EXPECT_NEAR failed: " << expr
+			  << " (" << a << " != " << b << ", eps=" << eps << ")\n";
+	}
+}
+
 #define EXPECT_TRUE(x) expect_true((x), #x, __FILE__, __LINE__)
 #define EXPECT_EQ_SIZE(a, b) expect_eq_size((a), (b), #a " == " #b, __FILE__, __LINE__)
 #define EXPECT_EQ_INT(a, b) expect_eq_int((a), (b), #a " == " #b, __FILE__, __LINE__)
+#define EXPECT_NEAR_F(a, b, eps) expect_close_float((a), (b), (eps), #a " ~= " #b, __FILE__, __LINE__)
 
 } // namespace
 
@@ -99,6 +109,24 @@ int main() {
 	EXPECT_TRUE(promote_dtypes(DataType::UINT8, DataType::INT8) == DataType::INT8);
 	EXPECT_TRUE(promote_dtypes(DataType::BOOL, DataType::UINT8) == DataType::UINT8);
 	EXPECT_TRUE(promote_dtypes(DataType::UNKNOWN, DataType::UINT8) == DataType::UNKNOWN);
+
+	// Quantization params structure
+	QuantizationParams qp;
+	EXPECT_TRUE(!qp.is_per_channel());
+	qp.per_channel_scales = {0.1f, 0.2f};
+	qp.per_channel_zero_points = {0, 1};
+	qp.axis = 0;
+	qp.symmetric = true;
+	EXPECT_TRUE(qp.is_per_channel());
+	QuantizationParams qp_copy = qp;
+	EXPECT_TRUE(qp == qp_copy);
+
+	// Quantize/dequantize helpers
+	float scale = 0.5f;
+	int8_t q = quantize_symmetric_int8(0.7f, scale); // 0.7/0.5 -> 1.4 -> round 1
+	EXPECT_EQ_INT(q, 1);
+	float dq = dequantize_symmetric_int8(q, scale);
+	EXPECT_NEAR_F(dq, 0.5f, 1e-5f);
 
 	if (failures == 0) {
 		std::cout << "test_dtype: OK\n";
