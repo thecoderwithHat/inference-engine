@@ -266,6 +266,13 @@ namespace inference_engine
             std::vector<int64_t> dimensions_;
         };
 
+        // Helper utilities (implemented in shape.cpp)
+        std::ostream &operator<<(std::ostream &os, const Shape &shape);
+        Shape elementwise_compatible_shape(const Shape &shape1, const Shape &shape2);
+        std::string shape_to_string(const Shape &shape);
+        bool is_scalar(const Shape &shape);
+        bool is_vector(const Shape &shape);
+
     }
 }
 #endif // INFERENCE_ENGINE_CORE_SHAPE_H_

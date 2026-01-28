@@ -78,18 +78,19 @@ if (BUILD_TESTS)
     add_executable(test_quant ${CMAKE_SOURCE_DIR}/tests/test_quant.cpp)
     target_link_libraries(test_quant PRIVATE infer_engine)
     add_test(NAME Quant COMMAND test_quant)
+
+    # Framework-free tests (do not require GoogleTest)
+    add_executable(test_tensor ${CMAKE_SOURCE_DIR}/tests/core/test_tensor.cpp)
+    target_link_libraries(test_tensor PRIVATE infer_engine)
+    add_test(NAME TensorTests COMMAND test_tensor)
+
+    add_executable(test_shape ${CMAKE_SOURCE_DIR}/tests/core/test_shape.cpp)
+    target_link_libraries(test_shape PRIVATE infer_engine)
+    add_test(NAME ShapeTests COMMAND test_shape)
     
     find_package(GTest QUIET)
     
     if (GTEST_FOUND)
-        add_executable(test_tensor ${CMAKE_SOURCE_DIR}/tests/core/test_tensor.cpp)
-        target_link_libraries(test_tensor PRIVATE infer_engine GTest::gtest_main)
-        add_test(NAME TensorTests COMMAND test_tensor)
-        
-        add_executable(test_shape ${CMAKE_SOURCE_DIR}/tests/core/test_shape.cpp)
-        target_link_libraries(test_shape PRIVATE infer_engine GTest::gtest_main)
-        add_test(NAME ShapeTests COMMAND test_shape)
-        
         add_executable(test_arena ${CMAKE_SOURCE_DIR}/tests/memory/test_arena.cpp)
         target_link_libraries(test_arena PRIVATE infer_engine GTest::gtest_main)
         add_test(NAME ArenaTests COMMAND test_arena)

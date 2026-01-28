@@ -3,6 +3,7 @@
 #include "inference_engine/core/tensor.h"
 #include "inference_engine/core/shape.h"
 #include "inference_engine/core/dtype.h"
+#include "inference_engine/memory/allocator.h"
 
 #include <cstdint>
 #include <cstdlib>
@@ -109,8 +110,8 @@ void test_slice_view() {
 	EXPECT_EQ_I64(view.rank(), 2);
 	EXPECT_EQ_I64(view.dim(0), 2);
 	EXPECT_EQ_I64(view.dim(1), 2);
-	EXPECT_EQ_PTR(static_cast<const uint8_t*>(view.data()),
-				  static_cast<const uint8_t*>(buffer) + 4); // offset one element
+	EXPECT_EQ_PTR(reinterpret_cast<const uint8_t*>(view.data()),
+				  reinterpret_cast<const uint8_t*>(buffer) + 4); // offset one element
 	EXPECT_TRUE(!view.is_contiguous()); // slice shares original strides
 }
 
