@@ -65,48 +65,51 @@ add_executable(onnx_inspect ${CMAKE_SOURCE_DIR}/tools/onnx_inspect.cpp)
 if (BUILD_TESTS)
     enable_testing()
 
-    # Always build at least one framework-free smoke test so `ctest` works
-    # even when GoogleTest isn't available on the system.
-    # add_executable(test_dtype_quant_smoke ${CMAKE_SOURCE_DIR}/tests/test_dtype_quant_smoke.cpp)
-    # target_link_libraries(test_dtype_quant_smoke PRIVATE infer_engine)
-    # add_test(NAME DTypeQuantSmoke COMMAND test_dtype_quant_smoke)
+    # Fetch GoogleTest automatically
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        v1.14.0
+    )
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
 
+    include(GoogleTest)
+
+    # Core tests
     add_executable(test_dtype ${CMAKE_SOURCE_DIR}/tests/core/test_dtype.cpp)
-    target_link_libraries(test_dtype PRIVATE infer_engine)
-    add_test(NAME DType COMMAND test_dtype)
-
-    add_executable(test_quant ${CMAKE_SOURCE_DIR}/tests/test_quant.cpp)
-    target_link_libraries(test_quant PRIVATE infer_engine)
-    add_test(NAME Quant COMMAND test_quant)
-
-    # Framework-free tests (do not require GoogleTest)
-    add_executable(test_tensor ${CMAKE_SOURCE_DIR}/tests/core/test_tensor.cpp)
-    target_link_libraries(test_tensor PRIVATE infer_engine)
-    add_test(NAME TensorTests COMMAND test_tensor)
+    target_link_libraries(test_dtype PRIVATE infer_engine GTest::gtest_main)
+    gtest_discover_tests(test_dtype)
 
     add_executable(test_shape ${CMAKE_SOURCE_DIR}/tests/core/test_shape.cpp)
-    target_link_libraries(test_shape PRIVATE infer_engine)
-    add_test(NAME ShapeTests COMMAND test_shape)
-    
-    find_package(GTest QUIET)
-    
-    if (GTEST_FOUND)
-        add_executable(test_arena ${CMAKE_SOURCE_DIR}/tests/memory/test_arena.cpp)
-        target_link_libraries(test_arena PRIVATE infer_engine GTest::gtest_main)
-        add_test(NAME ArenaTests COMMAND test_arena)
-        
-        add_executable(test_allocator ${CMAKE_SOURCE_DIR}/tests/memory/test_allocator.cpp)
-        target_link_libraries(test_allocator PRIVATE infer_engine GTest::gtest_main)
-        add_test(NAME AllocatorTests COMMAND test_allocator)
-        
-        add_executable(test_graph ${CMAKE_SOURCE_DIR}/tests/graph/test_graph.cpp)
-        target_link_libraries(test_graph PRIVATE infer_engine GTest::gtest_main)
-        add_test(NAME GraphTests COMMAND test_graph)
-        
-        add_executable(test_node ${CMAKE_SOURCE_DIR}/tests/graph/test_node.cpp)
-        target_link_libraries(test_node PRIVATE infer_engine GTest::gtest_main)
-        add_test(NAME NodeTests COMMAND test_node)
-    else()
-        message(STATUS "Google Test not found. Skipping unit tests.")
-    endif()
+    target_link_libraries(test_shape PRIVATE infer_engine GTest::gtest_main)
+    gtest_discover_tests(test_shape)
+
+    add_executable(test_tensor ${CMAKE_SOURCE_DIR}/tests/core/test_tensor.cpp)
+    target_link_libraries(test_tensor PRIVATE infer_engine GTest::gtest_main)
+    gtest_discover_tests(test_tensor)
+
+    add_executable(test_quant ${CMAKE_SOURCE_DIR}/tests/test_quant.cpp)
+    target_link_libraries(test_quant PRIVATE infer_engine GTest::gtest_main)
+    gtest_discover_tests(test_quant)
+
+    # Memory tests
+    add_executable(test_arena ${CMAKE_SOURCE_DIR}/tests/memory/test_arena.cpp)
+    target_link_libraries(test_arena PRIVATE infer_engine GTest::gtest_main)
+    gtest_discover_tests(test_arena)
+
+    add_executable(test_allocator ${CMAKE_SOURCE_DIR}/tests/memory/test_allocator.cpp)
+    target_link_libraries(test_allocator PRIVATE infer_engine GTest::gtest_main)
+    gtest_discover_tests(test_allocator)
+
+    # Graph tests
+    add_executable(test_graph ${CMAKE_SOURCE_DIR}/tests/graph/test_graph.cpp)
+    target_link_libraries(test_graph PRIVATE infer_engine GTest::gtest_main)
+    gtest_discover_tests(test_graph)
+
+    add_executable(test_node ${CMAKE_SOURCE_DIR}/tests/graph/test_node.cpp)
+    target_link_libraries(test_node PRIVATE infer_engine GTest::gtest_main)
+    gtest_discover_tests(test_node)
 endif()
