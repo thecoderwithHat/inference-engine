@@ -142,5 +142,14 @@ void Arena::reset() noexcept {
     stats_ = {};
 }
 
+bool Arena::owns(const void* ptr) const noexcept {
+    if (!base_ || !ptr || capacity_bytes_ == 0) {
+        return false;
+    }
+    const auto base_addr = reinterpret_cast<std::uintptr_t>(base_);
+    const auto ptr_addr = reinterpret_cast<std::uintptr_t>(ptr);
+    return ptr_addr >= base_addr && ptr_addr < (base_addr + capacity_bytes_);
+}
+
 } // namespace memory
 } // namespace inference_engine

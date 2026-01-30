@@ -50,6 +50,10 @@ public:
 
     Stats stats() const noexcept { return stats_; }
 
+    // Returns true if `ptr` lies within the backing arena buffer.
+    // Note: this does not guarantee `ptr` refers to the start of a live allocation.
+    bool owns(const void* ptr) const noexcept;
+
 private:
     static bool is_power_of_two(std::size_t x) noexcept;
     static std::size_t align_up(std::size_t value, std::size_t alignment) noexcept;
