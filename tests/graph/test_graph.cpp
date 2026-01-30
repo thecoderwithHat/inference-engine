@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include "inference_engine/graph/attributes.h"
+#include "inference_engine/graph/value.h"
 
 using namespace infer;
 
@@ -56,6 +57,53 @@ TEST(GraphAttributesTest, ToStringContainsKeys) {
 	const std::string s = attrs.toString();
 	EXPECT_NE(s.find("\"axis\""), std::string::npos);
 	EXPECT_NE(s.find("\"name\""), std::string::npos);
+}
+
+TEST(GraphValueTest, IdIsUnique) {
+	Value a;
+	Value b;
+	EXPECT_NE(a.id(), b.id());
+}
+
+TEST(GraphValueTest, TracksMetadataAndTensorPointer) {
+	using inference_engine::core::DataType;
+	using inference_engine::core::Shape;
+
+	Value v(Shape({1, 3, 224, 224}), DataType::FP32, "input");
+	EXPECT_EQ(v.name(), "input");
+	EXPECT_EQ(v.dtype(), DataType::FP32);
+	EXPECT_EQ(v.shape().dims().size(), 4u);
+	EXPECT_EQ(v.tensor(), nullptr);
+
+	inference_engine::core::Tensor* fake_tensor = reinterpret_cast<inference_engine::core::Tensor*>(0x1234);
+	v.setTensor(fake_tensor);
+	EXPECT_EQ(v.tensor(), fake_tensor);
+	v.clearTensor();
+	EXPECT_EQ(v.tensor(), nullptr);
+}
+
+TEST(GraphValueTest, TracksProducerAndConsumers) {
+	Value v;
+
+	infer::Node* producer = reinterpret_cast<infer::Node*>(0x10);
+	infer::Node* c1 = reinterpret_cast<infer::Node*>(0x11);
+	infer::Node* c2 = reinterpret_cast<infer::Node*>(0x12);
+
+	EXPECT_EQ(v.producer(), nullptr);
+	v.setProducer(producer);
+	EXPECT_EQ(v.producer(), producer);
+
+	EXPECT_FALSE(v.hasConsumer(c1));
+	v.addConsumer(c1);
+	v.addConsumer(c1); // no duplicates
+	v.addConsumer(c2);
+	EXPECT_TRUE(v.hasConsumer(c1));
+	EXPECT_TRUE(v.hasConsumer(c2));
+	EXPECT_EQ(v.consumers().size(), 2u);
+
+	v.removeConsumer(c1);
+	EXPECT_FALSE(v.hasConsumer(c1));
+	EXPECT_EQ(v.consumers().size(), 1u);
 }
 
 int main(int argc, char** argv) {
