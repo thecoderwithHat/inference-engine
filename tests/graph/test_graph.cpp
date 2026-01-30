@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include "inference_engine/graph/attributes.h"
+#include "inference_engine/graph/operator.h"
 #include "inference_engine/graph/value.h"
 
 using namespace infer;
@@ -104,6 +105,41 @@ TEST(GraphValueTest, TracksProducerAndConsumers) {
 	v.removeConsumer(c1);
 	EXPECT_FALSE(v.hasConsumer(c1));
 	EXPECT_EQ(v.consumers().size(), 1u);
+}
+
+namespace {
+class DummyOp final : public Operator {
+public:
+	DummyOp() : Operator("Dummy") {}
+	void execute() override {}
+	std::unique_ptr<Operator> clone() const override { return std::make_unique<DummyOp>(*this); }
+};
+} // namespace
+
+TEST(GraphOperatorTest, BaseUtilitiesWork) {
+	DummyOp op;
+	EXPECT_EQ(op.type(), "Dummy");
+
+	Value a;
+	Value b;
+	op.setInputs({&a});
+	op.addOutput(&b);
+	ASSERT_EQ(op.inputs().size(), 1u);
+	ASSERT_EQ(op.outputs().size(), 1u);
+	EXPECT_EQ(op.inputs()[0], &a);
+	EXPECT_EQ(op.outputs()[0], &b);
+
+	AttributeMap attrs;
+	attrs.set("axis", 1);
+	op.setAttributes(&attrs);
+	ASSERT_NE(op.attributes(), nullptr);
+	EXPECT_TRUE(op.attributes()->has("axis"));
+
+	EXPECT_NO_THROW(op.validate());
+
+	auto cloned = op.clone();
+	ASSERT_NE(cloned, nullptr);
+	EXPECT_EQ(cloned->type(), "Dummy");
 }
 
 int main(int argc, char** argv) {
